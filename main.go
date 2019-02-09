@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -18,6 +19,8 @@ func main() {
 		return nil
 	}
 
+	log.Println("Available routes:")
+
 	if err := chi.Walk(router, walkFunc); err != nil {
 		log.Panicf("Logging error: %s\n", err.Error())
 	}
@@ -29,5 +32,6 @@ func main() {
 		port = "8080"
 	}
 
+	fmt.Println("Serving API on http://localhost:" + port)
 	log.Fatal(http.ListenAndServe(":"+port, router))
 }

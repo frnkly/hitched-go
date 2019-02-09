@@ -1,9 +1,13 @@
+/**
+ * Defines all API routes.
+ */
 package main
 
 import (
 	"net/http"
 	"time"
 
+	"github.com/frnkly/hitched/handlers"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/render"
@@ -34,6 +38,10 @@ func Router() *chi.Mux {
 	router.Get("/", func(writer http.ResponseWriter, request *http.Request) {
 		writer.Write([]byte("Hitched API"))
 	})
+
+	// RSVP
+	router.Get("/rsvp/{code}", handlers.Find)
+	router.Post("/rsvp", handlers.Update)
 
 	return router
 }

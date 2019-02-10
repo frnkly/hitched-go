@@ -1,3 +1,7 @@
+/**
+ * Handles all sheet operations, including authentication, reading and writing
+ * to a Google Sheet.
+ */
 package handlers
 
 // Sheet represents a Google sheet

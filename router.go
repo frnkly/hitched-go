@@ -1,5 +1,5 @@
 /**
- * Defines all API routes.
+ * Sets up the router and middleware, and defines all API routes.
  */
 package main
 
@@ -20,13 +20,11 @@ func Router() *chi.Mux {
 
 	// Register middlewares.
 	router.Use(
-		render.SetContentType(render.ContentTypeJSON),
 		middleware.RedirectSlashes,
-		middleware.RequestID,
-		middleware.RealIP,
 		middleware.Logger,
-		middleware.DefaultCompress,
 		middleware.Recoverer,
+		middleware.DefaultCompress,
+		render.SetContentType(render.ContentTypeJSON),
 	)
 
 	// Set a timeout value on the request context (ctx), that will signal
@@ -39,8 +37,17 @@ func Router() *chi.Mux {
 		writer.Write([]byte("Hitched API"))
 	})
 
+	// Test routes
+	router.Get("/ping", func(writer http.ResponseWriter, request *http.Request) {
+		writer.Write([]byte("pong"))
+	})
+
+	router.Get("/panic", func(writer http.ResponseWriter, request *http.Request) {
+		panic("test")
+	})
+
 	// RSVP
-	router.Get("/rsvp/{code}", handlers.Find)
+	router.Get("/rsvp/{code}", handlers.GetRsvp)
 	router.Post("/rsvp", handlers.Update)
 
 	return router

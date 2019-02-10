@@ -2,7 +2,18 @@
 
 ## Quickstart
 
-## Deploying
+```shell
+# Launch API
+go run main.go router.go
+```
 
-    heroku accounts:set kc
-    git push heroku master
+# Developing
+
+```shell
+# Updating vendor files
+govendor add +external
+
+# Deploying to Heroku (after committing changes)
+heroku accounts:set kc
+git push heroku master
+```

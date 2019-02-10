@@ -14,6 +14,5 @@ go run main.go router.go
 govendor add +external
 
 # Deploying to Heroku (after committing changes)
-heroku accounts:set kc
-git push heroku master
+./deploy.sh
 ```

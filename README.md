@@ -4,7 +4,7 @@
 
 ```shell
 # Launch API
-go run main.go router.go
+./run.sh
 ```
 
 # Developing
@@ -12,6 +12,12 @@ go run main.go router.go
 ```shell
 # Updating vendor files
 govendor add +external
+
+# Create a local environment file before running the API locally
+cp ./.env.sample ./.env
+
+# Running the API
+./run.sh
 
 # Deploying to Heroku (after committing changes)
 ./deploy.sh

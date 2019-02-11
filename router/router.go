@@ -1,7 +1,4 @@
-/**
- * Sets up the router and middleware, and defines all API routes.
- */
-package main
+package router
 
 import (
 	"net/http"
@@ -10,11 +7,12 @@ import (
 	"github.com/frnkly/hitched/handlers"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/cors"
 	"github.com/go-chi/render"
 )
 
-// Router is the main router for the API.
-func Router() *chi.Mux {
+// Create - Sets up the router and middleware, and defines all API routes.
+func Create() *chi.Mux {
 	// Create new router.
 	router := chi.NewRouter()
 
@@ -25,6 +23,7 @@ func Router() *chi.Mux {
 		middleware.Recoverer,
 		middleware.DefaultCompress,
 		render.SetContentType(render.ContentTypeJSON),
+		cors.New(GetCorsOptions()).Handler,
 	)
 
 	// Set a timeout value on the request context (ctx), that will signal

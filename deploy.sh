@@ -2,12 +2,12 @@
 
 echo "Deploying Hitched API..."
 
-# Set Heroku account
+# Set Heroku account.
 #HEROKU_ACCOUNT=$(heroku accounts:current)
 heroku accounts:set kc
 
-# Push to Heroku
-git push heroku master
+# Push to Heroku.
+git push heroku stable:master
 
-# Reset Heroku account
+# Reset Heroku account.
 echo "TODO: reset Heroku account..."

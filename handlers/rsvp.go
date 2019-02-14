@@ -101,6 +101,8 @@ func getInvitationByCode(code string) (*Invitation, error) {
 		return &invite, nil
 	}
 
+	GetSheet()
+
 	// Invitations not implemented.
 	return nil, errors.New("invitations not implemented")
 }

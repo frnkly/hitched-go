@@ -10,27 +10,6 @@ import (
 )
 
 // ---
-// Data structures
-// ---
-
-// Guest represents a guest pulled from the Google sheet.
-type Guest struct {
-	Name                 string `json:"name"`
-	Email                string `json:"email"`
-	Address              string `json:"address"`
-	IsAttendingCeremony  bool   `json:"isAttendingCeremony"`
-	IsAttendingReception bool   `json:"isAttendingReceptiom"`
-}
-
-// Invitation represents a guest's invitation(s), along with their RSVP.
-type Invitation struct {
-	Code               string   `json:"code"`
-	HasCeremonyInvite  bool     `json:"hasCeremonyInvite"`
-	HasReceptionInvite bool     `json:"hasReceptionInvite"`
-	Guests             []*Guest `json:"guests"`
-}
-
-// ---
 // Router methods
 // ---
 

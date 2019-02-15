@@ -19,13 +19,19 @@ import (
 // Data structures
 // ---
 
+// RawSheet represents the shape of the Google Sheets API response.
+type RawSheet struct {
+	Range string     `json:"range"`
+	Major string     `json:"majorDimension"`
+	Rows  [][]string `json:"values"`
+}
+
 // Guest represents a guest pulled from the Google sheet.
 type Guest struct {
 	Name                 string `json:"name"`
-	Email                string `json:"email"`
-	Address              string `json:"address"`
+	Contact              string `json:"contact"`
 	IsAttendingCeremony  bool   `json:"isAttendingCeremony"`
-	IsAttendingReception bool   `json:"isAttendingReceptiom"`
+	IsAttendingReception bool   `json:"isAttendingReception"`
 }
 
 // Invitation represents a guest's invitation(s), along with their RSVP.
@@ -36,19 +42,55 @@ type Invitation struct {
 	Guests             []*Guest `json:"guests"`
 }
 
-// Sheet holds the list of all invitations.
-type Sheet struct {
-	invitations []*Invitation
+// InvitationList holds the list of all invitations.
+type InvitationList struct {
+	Invitations map[string]*Invitation
 }
 
-const sheetsBaseEndpoint string = "https://sheets.googleapis.com/v4/spreadsheets"
+// ---
+// Constants
+// ---
+
+// SheetsBaseEndpoint - Base endpoint for Google Sheets API.
+const SheetsBaseEndpoint string = "https://sheets.googleapis.com/v4/spreadsheets"
+
+// NameColIndex - Index of "name" column in Google sheet.
+const NameColIndex int = 0
+
+// CeremonyInvitationColIndex - Index of "ceremony invitation" column in Google sheet.
+const CeremonyInvitationColIndex int = 1
+
+// CeremonyConfirmationColIndex - Index of "ceremony confirmation" column in Google sheet.
+const CeremonyConfirmationColIndex int = 2
+
+// ReceptionInvitationColIndex - Index of "reception invitation" column in Google sheet.
+const ReceptionInvitationColIndex int = 3
+
+// ReceptionConfirmationColIndex - Index of "reception confirmation" column in Google sheet.
+const ReceptionConfirmationColIndex int = 4
+
+// CodeColIndex - Index of "code" column in Google sheet.
+const CodeColIndex int = 5
+
+// ContactColIndex - Index of "contact" column in Google sheet.
+const ContactColIndex int = 6
+
+// LanguageColIndex - Index of "language" column in Google sheet.
+const LanguageColIndex int = 6
+
+// CheckMark is the checkmark charater used in the Google sheet.
+const CheckMark string = "✓"
+
+// ---
+// Helper functions
+// ---
 
 // Makes a GET request to the Google Sheets API and returns the response.
 // https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/get
 func getSheet() (*http.Response, error) {
 
 	endpointParts := []string{
-		sheetsBaseEndpoint,
+		SheetsBaseEndpoint,
 		"/",
 		os.Getenv("GOOGLE_SPREADSHEET_ID"),
 		"/values/",
@@ -84,65 +126,69 @@ func parseSheet(stream *http.Response) ([][]string, error) {
 		return nil, err
 	}
 
-	// Parse JSON string into a struct.
-	var decoded map[string]interface{}
+	parsedRows := RawSheet{}
 
-	if err := json.Unmarshal(jsonStr, &decoded); err != nil {
+	if err := json.Unmarshal(jsonStr, &parsedRows); err != nil {
 		return nil, err
 	}
 
-	// Retrieve column values from struct.
-	type ValuesType struct {
-		values []string
-	}
-
-	rows := decoded["values"].([]interface{})
-	parsedRows := make([][]string, len(rows))
-
-	for i := range rows {
-		row := rows[i].([]interface{})
-		parsedRow := make([]string, len(row))
-
-		for j := range row {
-			col := row[j].(string)
-			parsedRow[j] := col
-		}
-
-		parsedRows[i] = parsedRow
-	}
-
-	log.Println("parsedRows", parsedRows)
-
 	// Return raw values in the sheet.
-	return parsedRows, nil
+	return parsedRows.Rows, nil
 }
 
-// GetSheet retrieves the Google sheet with all the guest list information.
-func GetSheet() Sheet {
-	sheet := Sheet{}
+// GetInvitationList returns all invitations, organized by code.
+func GetInvitationList() (*InvitationList, error) {
+	guestList := InvitationList{Invitations: map[string]*Invitation{}}
 
 	// Get sheet from API.
 	sheetResponse, err := getSheet()
 
 	if err != nil {
-		log.Printf("Google Sheets error: %s\n", err.Error())
-
-		return sheet
+		return nil, errors.New("Google Sheets error: " + err.Error())
 	}
 
 	// Parse JSON response.
 	sheetValues, err := parseSheet(sheetResponse)
 
 	if err != nil {
-		log.Printf("JSON parsing error: %s\n", err.Error())
-
-		return sheet
+		return nil, errors.New("JSON parsing error: " + err.Error())
 	}
 
 	// Populate sheet struct.
 	for _, data := range sheetValues {
-		log.Println(data)
+		// Skip empty rows and guests who don't have a ceremony invite.
+		if data[NameColIndex] == "" || data[CeremonyInvitationColIndex] == "" {
+			continue
+		}
+
+		// Check invitation code.
+		code := data[CodeColIndex]
+		if len(code) != 4 {
+			continue
+		}
+
+		// Create invitation key in guest list.
+		if _, ok := guestList.Invitations[code]; !ok {
+			invite := Invitation{
+				Code:               code,
+				HasCeremonyInvite:  true,
+				HasReceptionInvite: data[ReceptionInvitationColIndex] == CheckMark,
+				Guests:             []*Guest{},
+			}
+
+			guestList.Invitations[code] = &invite
+		}
+
+		// Add guest to guest list
+		guest := Guest{
+			Name:                 data[NameColIndex],
+			Contact:              data[ContactColIndex],
+			IsAttendingCeremony:  data[CeremonyConfirmationColIndex] == CheckMark,
+			IsAttendingReception: data[ReceptionConfirmationColIndex] == CheckMark,
+		}
+
+		guestList.Invitations[code].Guests = append(guestList.Invitations[code].Guests, &guest)
 	}
 
-	return sheet
+	return &guestList, nil
 }

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
@@ -52,10 +53,10 @@ func Update(writer http.ResponseWriter, request *http.Request) {
 // ---
 
 func getInvitationByCode(code string) (*Invitation, error) {
-	// Test code for ceremony invites
+	// Test code for ceremony invites.
 	if code == "test-ceremony" {
-		jayne := Guest{Name: "Jayne Mandat", Email: "jayne.mandat@gmail.com"}
-		frank := Guest{Name: "Frank Amankrah", Email: "frank@frnk.ca"}
+		jayne := Guest{Name: "Jayne Mandat", Contact: "jayne.mandat@gmail.com"}
+		frank := Guest{Name: "Frank Amankrah", Contact: "frank@frnk.ca"}
 		invite := Invitation{
 			Code:               code,
 			HasCeremonyInvite:  true,
@@ -66,10 +67,10 @@ func getInvitationByCode(code string) (*Invitation, error) {
 		return &invite, nil
 	}
 
-	// Test code for reception invites
+	// Test code for reception invites.
 	if code == "test-reception" {
-		jayne := Guest{Name: "Jayne Mandat", Email: "jayne.mandat@gmail.com"}
-		frank := Guest{Name: "Frank Amankrah", Email: "frank@frnk.ca"}
+		jayne := Guest{Name: "Jayne Mandat", Contact: "jayne.mandat@gmail.com"}
+		frank := Guest{Name: "Frank Amankrah", Contact: "frank@frnk.ca"}
 		invite := Invitation{
 			Code:               code,
 			HasCeremonyInvite:  true,
@@ -80,10 +81,35 @@ func getInvitationByCode(code string) (*Invitation, error) {
 		return &invite, nil
 	}
 
-	GetSheet()
+	// Test code for a large group of guests.
+	if code == "test-large" {
+		jayne := Guest{Name: "Jayne Mandat", Contact: "jayne.mandat@gmail.com"}
+		jasmine := Guest{Name: "Jasmine Mandat", Contact: "jasmine.mandat@gmail.com"}
+		judith := Guest{Name: "Judith Mandat", Contact: "judith.mandat@gmail.com"}
+		frank := Guest{Name: "Frank Amankrah", Contact: "frank@frnk.ca"}
+		invite := Invitation{
+			Code:               code,
+			HasCeremonyInvite:  true,
+			HasReceptionInvite: true,
+			Guests:             []*Guest{&jayne, &jasmine, &judith, &frank},
+		}
 
-	// Invitations not implemented.
-	return nil, errors.New("invitations not implemented")
+		return &invite, nil
+	}
+
+	// Retrieve guest list.
+	guestList, err := GetInvitationList()
+
+	if err != nil {
+		return nil, err
+	}
+
+	// Retrieve invitation.
+	if invite, ok := guestList.Invitations[strings.ToUpper(code)]; ok {
+		return invite, nil
+	}
+
+	return nil, errors.New("code not found")
 }
 
 // ---

@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/frnkly/hitched/utils"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 )
@@ -23,7 +24,7 @@ func GetRsvp(writer http.ResponseWriter, request *http.Request) {
 	validated := codeValidator.MatchString(code)
 
 	if validated == false {
-		render.Render(writer, request, BadRequestError(errors.New("invalid code")))
+		render.Render(writer, request, utils.BadRequestError(errors.New("invalid code")))
 		return
 	}
 
@@ -31,12 +32,12 @@ func GetRsvp(writer http.ResponseWriter, request *http.Request) {
 	invite, err := getInvitationByCode(code)
 
 	if err != nil {
-		render.Render(writer, request, NotFoundError(err))
+		render.Render(writer, request, utils.NotFoundError(err))
 		return
 	}
 
 	if err := render.Render(writer, request, Response(invite)); err != nil {
-		render.Render(writer, request, RenderingError(err))
+		render.Render(writer, request, utils.RenderingError(err))
 		return
 	}
 }
@@ -52,16 +53,16 @@ func Update(writer http.ResponseWriter, request *http.Request) {
 // Helper functions
 // ---
 
-func getInvitationByCode(code string) (*Invitation, error) {
+func getInvitationByCode(code string) (*utils.Invitation, error) {
 	// Test code for ceremony invites.
 	if code == "test-ceremony" {
-		jayne := Guest{Name: "Jayne Mandat", Contact: "jayne.mandat@gmail.com"}
-		frank := Guest{Name: "Frank Amankrah", Contact: "frank@frnk.ca"}
-		invite := Invitation{
+		jayne := utils.Guest{Name: "Jayne Mandat", Contact: "jayne.mandat@gmail.com"}
+		frank := utils.Guest{Name: "Frank Amankrah", Contact: "frank@frnk.ca"}
+		invite := utils.Invitation{
 			Code:               code,
 			HasCeremonyInvite:  true,
 			HasReceptionInvite: false,
-			Guests:             []*Guest{&jayne, &frank},
+			Guests:             []*utils.Guest{&jayne, &frank},
 		}
 
 		return &invite, nil
@@ -69,13 +70,13 @@ func getInvitationByCode(code string) (*Invitation, error) {
 
 	// Test code for reception invites.
 	if code == "test-reception" {
-		jayne := Guest{Name: "Jayne Mandat", Contact: "jayne.mandat@gmail.com"}
-		frank := Guest{Name: "Frank Amankrah", Contact: "frank@frnk.ca"}
-		invite := Invitation{
+		jayne := utils.Guest{Name: "Jayne Mandat", Contact: "jayne.mandat@gmail.com"}
+		frank := utils.Guest{Name: "Frank Amankrah", Contact: "frank@frnk.ca"}
+		invite := utils.Invitation{
 			Code:               code,
 			HasCeremonyInvite:  true,
 			HasReceptionInvite: true,
-			Guests:             []*Guest{&jayne, &frank},
+			Guests:             []*utils.Guest{&jayne, &frank},
 		}
 
 		return &invite, nil
@@ -83,22 +84,22 @@ func getInvitationByCode(code string) (*Invitation, error) {
 
 	// Test code for a large group of guests.
 	if code == "test-large" {
-		jayne := Guest{Name: "Jayne Mandat", Contact: "jayne.mandat@gmail.com"}
-		jasmine := Guest{Name: "Jasmine Mandat", Contact: "jasmine.mandat@gmail.com"}
-		judith := Guest{Name: "Judith Mandat", Contact: "judith.mandat@gmail.com"}
-		frank := Guest{Name: "Frank Amankrah", Contact: "frank@frnk.ca"}
-		invite := Invitation{
+		jayne := utils.Guest{Name: "Jayne Mandat", Contact: "jayne.mandat@gmail.com"}
+		jasmine := utils.Guest{Name: "Jasmine Mandat", Contact: "jasmine.mandat@gmail.com"}
+		judith := utils.Guest{Name: "Judith Mandat", Contact: "judith.mandat@gmail.com"}
+		frank := utils.Guest{Name: "Frank Amankrah", Contact: "frank@frnk.ca"}
+		invite := utils.Invitation{
 			Code:               code,
 			HasCeremonyInvite:  true,
 			HasReceptionInvite: true,
-			Guests:             []*Guest{&jayne, &jasmine, &judith, &frank},
+			Guests:             []*utils.Guest{&jayne, &jasmine, &judith, &frank},
 		}
 
 		return &invite, nil
 	}
 
 	// Retrieve guest list.
-	guestList, err := GetInvitationList()
+	guestList, err := utils.GetInvitationList()
 
 	if err != nil {
 		return nil, err
@@ -122,7 +123,7 @@ func getInvitationByCode(code string) (*Invitation, error) {
 // then the next field, and so on, all the way down the tree.
 // Render is called in top-down order, like a http handler middleware chain.
 type InvitationResponse struct {
-	*Invitation
+	*utils.Invitation
 }
 
 // Render - renders an InvitationResponse.
@@ -133,6 +134,6 @@ func (rd *InvitationResponse) Render(w http.ResponseWriter, r *http.Request) err
 }
 
 // Response - generates an InvitationResponse response.
-func Response(invite *Invitation) render.Renderer {
+func Response(invite *utils.Invitation) render.Renderer {
 	return &InvitationResponse{Invitation: invite}
 }

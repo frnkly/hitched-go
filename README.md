@@ -21,4 +21,7 @@ cp ./.env.sample ./.env
 
 # Deploying to Heroku (after committing changes)
 ./deploy.sh
+
+# Tailing the logs
+heroku logs --tail
 ```

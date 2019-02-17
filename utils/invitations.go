@@ -1,9 +1,5 @@
 package utils
 
-import (
-	"errors"
-)
-
 // ---
 // Data structures
 // ---
@@ -39,30 +35,47 @@ func GetInvitationList() (*InvitationList, error) {
 	guestList := InvitationList{Invitations: map[string]*Invitation{}}
 
 	// Get sheet from API.
-	sheetResponse, err := GetSheetStream()
+	sheetData, err := GetSheetData()
 
 	if err != nil {
-		return nil, errors.New("Google Sheets error: " + err.Error())
-	}
-
-	// Parse JSON response.
-	sheetValues, err := ParseSheetStream(sheetResponse)
-
-	if err != nil {
-		return nil, errors.New("JSON parsing error: " + err.Error())
+		return nil, err
 	}
 
 	// Populate sheet struct.
-	for _, data := range sheetValues {
+	for _, data := range sheetData {
 		// Skip empty rows and guests who don't have a ceremony invite.
 		if data[FirstNameColIndex] == "" || data[CeremonyInvitationColIndex] == "" {
 			continue
 		}
 
 		// Check invitation code.
-		code := data[CodeColIndex]
-		if len(code) != 4 {
+		code, isString := data[CodeColIndex].(string)
+		if isString == false {
 			continue
+		} else if len(code) != 4 {
+			continue
+		}
+
+		// Pull guest data.
+		firstNameColData, firstNameTest := data[FirstNameColIndex].(string)
+		lastNameColData, lastNameTest := data[LastNameColIndex].(string)
+		contactColData := ""
+		contactTest := false
+
+		if len(data) > ContactColIndex {
+			contactColData, contactTest = data[ContactColIndex].(string)
+
+			if contactTest == false {
+				contactColData = ""
+			}
+		}
+
+		if firstNameTest == false {
+			firstNameColData = ""
+		}
+
+		if lastNameTest == false {
+			lastNameColData = ""
 		}
 
 		// Create invitation key in guest list.
@@ -79,9 +92,9 @@ func GetInvitationList() (*InvitationList, error) {
 
 		// Add guest to guest list
 		guest := Guest{
-			FirstName:            data[FirstNameColIndex],
-			LastName:             data[LastNameColIndex],
-			Contact:              data[ContactColIndex],
+			FirstName:            firstNameColData,
+			LastName:             lastNameColData,
+			Contact:              contactColData,
 			IsAttendingCeremony:  data[CeremonyConfirmationColIndex] == CheckMark,
 			IsAttendingReception: data[ReceptionConfirmationColIndex] == CheckMark,
 		}

@@ -1,14 +1,7 @@
 package utils
 
 import (
-	"encoding/json"
-	"errors"
-	"io/ioutil"
-	"log"
-	"net/http"
-	"net/url"
 	"os"
-	"strings"
 
 	"google.golang.org/api/sheets/v4"
 )
@@ -65,36 +58,6 @@ const CheckMark string = "✓"
 // Utility functions
 // ---
 
-// GetSheetStream makes a GET request to the Google Sheets API and returns
-// the response.
-// https://developers.google.com/sheets/api/reference/rest/v4/spreadsheets.values/get
-func GetSheetStream() (*http.Response, error) {
-
-	endpointParts := []string{
-		SheetsBaseEndpoint,
-		"/",
-		os.Getenv("GOOGLE_SPREADSHEET_ID"),
-		"/values/",
-		url.QueryEscape(os.Getenv("GOOGLE_SHEET_RANGE")),
-		"?key=",
-		os.Getenv("GOOGLE_API_KEY"),
-	}
-
-	endpoint := strings.Join(endpointParts, "")
-
-	log.Println("Retrieving Google sheet from:", endpoint)
-
-	stream, err := http.Get(endpoint)
-
-	if err != nil {
-		return nil, err
-	} else if stream.StatusCode != 200 {
-		return nil, errors.New("HTTP Error: " + stream.Status)
-	}
-
-	return stream, nil
-}
-
 // GetSheetService returns an editable sheet
 func GetSheetService() (*sheets.Service, error) {
 	service, err := sheets.New(GetOauthClient())
@@ -106,34 +69,37 @@ func GetSheetService() (*sheets.Service, error) {
 	return service, nil
 }
 
-// ParseSheetStream parses a Google Sheets API response into a struct.
-func ParseSheetStream(stream *http.Response) ([][]string, error) {
-
-	defer stream.Body.Close()
-
-	// Retrieve JSON string from response body.
-	jsonStr, err := ioutil.ReadAll(stream.Body)
+// GetSheet retrieves the contents of the Google sheet.
+func GetSheetData() ([][]interface{}, error) {
+	// The sheet service allows us to make requests on a given sheet.
+	service, err := GetSheetService()
 
 	if err != nil {
 		return nil, err
 	}
 
-	parsedRows := RawSheet{}
+	// Retrieve sheet data.
+	sheetRange, err := service.Spreadsheets.Values.Get(
+		os.Getenv("GOOGLE_SPREADSHEET_ID"),
+		os.Getenv("GOOGLE_SHEET_RANGE"),
+	).ValueRenderOption("FORMATTED_VALUE").Do()
 
-	if err := json.Unmarshal(jsonStr, &parsedRows); err != nil {
+	if err != nil {
 		return nil, err
 	}
 
-	// Return raw values in the sheet.
-	return parsedRows.Rows, nil
+	return sheetRange.Values, nil
 }
 
 // ValueToSheet converts a single value to the JSON shape expected by the
 // Google Sheets API.
 func ValueToSheet(value string) *sheets.ValueRange {
+	// Create empty interface.
 	row := make([]interface{}, 1)
-	row[0] = value
 	values := make([][]interface{}, 1)
+
+	// Fill in interface with given value.
+	row[0] = value
 	values[0] = row
 
 	return &sheets.ValueRange{

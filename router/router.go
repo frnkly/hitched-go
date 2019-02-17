@@ -45,9 +45,11 @@ func Create() *chi.Mux {
 		panic("test")
 	})
 
+	// OAuth for Google Sheets API.
+
 	// RSVP
 	router.Get("/rsvp/{code}", handlers.GetRsvp)
-	router.Post("/rsvp", handlers.Update)
+	router.Post("/rsvp/{code}", handlers.UpdateRsvp)
 
 	return router
 }

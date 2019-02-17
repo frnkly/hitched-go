@@ -10,7 +10,8 @@ import (
 
 // Guest represents a guest pulled from the Google sheet.
 type Guest struct {
-	Name                 string `json:"name"`
+	FirstName            string `json:"firstName"`
+	LastName             string `json:"lastName"`
 	Contact              string `json:"contact"`
 	IsAttendingCeremony  bool   `json:"isAttendingCeremony"`
 	IsAttendingReception bool   `json:"isAttendingReception"`
@@ -54,7 +55,7 @@ func GetInvitationList() (*InvitationList, error) {
 	// Populate sheet struct.
 	for _, data := range sheetValues {
 		// Skip empty rows and guests who don't have a ceremony invite.
-		if data[NameColIndex] == "" || data[CeremonyInvitationColIndex] == "" {
+		if data[FirstNameColIndex] == "" || data[CeremonyInvitationColIndex] == "" {
 			continue
 		}
 
@@ -78,7 +79,8 @@ func GetInvitationList() (*InvitationList, error) {
 
 		// Add guest to guest list
 		guest := Guest{
-			Name:                 data[NameColIndex],
+			FirstName:            data[FirstNameColIndex],
+			LastName:             data[LastNameColIndex],
 			Contact:              data[ContactColIndex],
 			IsAttendingCeremony:  data[CeremonyConfirmationColIndex] == CheckMark,
 			IsAttendingReception: data[ReceptionConfirmationColIndex] == CheckMark,

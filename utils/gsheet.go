@@ -9,6 +9,8 @@ import (
 	"net/url"
 	"os"
 	"strings"
+
+	"google.golang.org/api/sheets/v4"
 )
 
 // ---
@@ -29,35 +31,38 @@ type RawSheet struct {
 // SheetsBaseEndpoint - Base endpoint for Google Sheets API.
 const SheetsBaseEndpoint string = "https://sheets.googleapis.com/v4/spreadsheets"
 
-// NameColIndex - Index of "name" column in Google sheet.
-const NameColIndex int = 0
+// FirstNameColIndex - Index of "name" column in Google sheet.
+const FirstNameColIndex int = 0
+
+// LastNameColIndex - Index of "name" column in Google sheet.
+const LastNameColIndex int = 1
 
 // CeremonyInvitationColIndex - Index of "ceremony invitation" column in Google sheet.
-const CeremonyInvitationColIndex int = 1
+const CeremonyInvitationColIndex int = 2
 
 // CeremonyConfirmationColIndex - Index of "ceremony confirmation" column in Google sheet.
-const CeremonyConfirmationColIndex int = 2
+const CeremonyConfirmationColIndex int = 3
 
 // ReceptionInvitationColIndex - Index of "reception invitation" column in Google sheet.
-const ReceptionInvitationColIndex int = 3
+const ReceptionInvitationColIndex int = 4
 
 // ReceptionConfirmationColIndex - Index of "reception confirmation" column in Google sheet.
-const ReceptionConfirmationColIndex int = 4
+const ReceptionConfirmationColIndex int = 5
 
 // CodeColIndex - Index of "code" column in Google sheet.
-const CodeColIndex int = 5
+const CodeColIndex int = 6
 
 // ContactColIndex - Index of "contact" column in Google sheet.
-const ContactColIndex int = 6
+const ContactColIndex int = 7
 
 // LanguageColIndex - Index of "language" column in Google sheet.
-const LanguageColIndex int = 6
+const LanguageColIndex int = 8
 
 // CheckMark is the checkmark charater used in the Google sheet.
 const CheckMark string = "✓"
 
 // ---
-// Helper functions
+// Utility functions
 // ---
 
 // GetSheetStream makes a GET request to the Google Sheets API and returns
@@ -90,6 +95,17 @@ func GetSheetStream() (*http.Response, error) {
 	return stream, nil
 }
 
+// GetSheetService returns an editable sheet
+func GetSheetService() (*sheets.Service, error) {
+	service, err := sheets.New(GetOauthClient())
+
+	if err != nil {
+		return nil, err
+	}
+
+	return service, nil
+}
+
 // ParseSheetStream parses a Google Sheets API response into a struct.
 func ParseSheetStream(stream *http.Response) ([][]string, error) {
 
@@ -110,4 +126,17 @@ func ParseSheetStream(stream *http.Response) ([][]string, error) {
 
 	// Return raw values in the sheet.
 	return parsedRows.Rows, nil
+}
+
+// ValueToSheet converts a single value to the JSON shape expected by the
+// Google Sheets API.
+func ValueToSheet(value string) *sheets.ValueRange {
+	row := make([]interface{}, 1)
+	row[0] = value
+	values := make([][]interface{}, 1)
+	values[0] = row
+
+	return &sheets.ValueRange{
+		Values: values,
+	}
 }

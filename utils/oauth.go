@@ -6,7 +6,6 @@ package utils
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -14,22 +13,58 @@ import (
 	"golang.org/x/net/context"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
-	"google.golang.org/api/sheets/v4"
+	"golang.org/x/oauth2/jwt"
 )
 
-// GetOauthClient retrieves a token, saves the token, then returns the generated client.
-func GetOauthClient(config *oauth2.Config) *http.Client {
+// ---
+// Constants
+// ---
+
+const TokenFileName string = "token.json"
+
+// ---
+// Utils
+// ---
+
+// GetOauthClient uses the service account to generate an access token.
+func GetOauthClient() *http.Client {
+	log.Println("client email", os.Getenv("GOOGLE_CLIENT_EMAIL"))
+	log.Println("client key", os.Getenv("GOOGLE_CLIENT_PRIVATE_KEY"))
+
+	config := &jwt.Config{
+		Email:      os.Getenv("GOOGLE_CLIENT_EMAIL"),
+		PrivateKey: []byte(os.Getenv("GOOGLE_CLIENT_PRIVATE_KEY")),
+		Scopes: []string{
+			"https://www.googleapis.com/auth/drive",
+			"https://www.googleapis.com/auth/drive.file",
+			"https://www.googleapis.com/auth/spreadsheets",
+		},
+		TokenURL: google.JWTTokenURL,
+	}
+
+	// Initiate an http.Client.
+	return config.Client(oauth2.NoContext)
+}
+
+// GetOauthClientFromWeb retrieves a token, saves the token, then returns the generated
+// client.
+func GetOauthClientFromWeb(config *oauth2.Config) *http.Client {
 	// The file token.json stores the user's access and refresh tokens, and is
 	// created automatically when the authorization flow completes for the first
 	// time.
-	tokFile := "token.json"
-	tok, err := tokenFromFile(tokFile)
+	token, err := getTokenFromFile()
+
 	if err != nil {
-		tok = getTokenFromWeb(config)
-		saveToken(tokFile, tok)
+		token = getTokenFromWeb(config)
+		saveTokenToFile(token)
 	}
-	return config.Client(context.Background(), tok)
+
+	return config.Client(context.Background(), token)
 }
+
+// ---
+// Helper functions
+// ---
 
 // Request a token from the web, then returns the retrieved token.
 func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
@@ -38,77 +73,48 @@ func getTokenFromWeb(config *oauth2.Config) *oauth2.Token {
 		"authorization code: \n%v\n", authURL)
 
 	var authCode string
+
 	if _, err := fmt.Scan(&authCode); err != nil {
 		log.Fatalf("Unable to read authorization code: %v", err)
 	}
 
-	tok, err := config.Exchange(context.TODO(), authCode)
+	token, err := config.Exchange(context.TODO(), authCode)
+
 	if err != nil {
 		log.Fatalf("Unable to retrieve token from web: %v", err)
 	}
 
-	return tok
+	return token
 }
 
-// Retrieves a token from a local file.
-func tokenFromFile(file string) (*oauth2.Token, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-	tok := &oauth2.Token{}
-	err = json.NewDecoder(f).Decode(tok)
-	return tok, err
-}
+// Saves a token to a JSON file.
+func saveTokenToFile(token *oauth2.Token) {
+	fmt.Printf("Saving credential file to: %s\n", TokenFileName)
 
-// Saves a token to a file path.
-func saveToken(path string, token *oauth2.Token) {
-	fmt.Printf("Saving credential file to: %s\n", path)
-	f, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+	tokenFile, err := os.OpenFile(TokenFileName, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
+
 	if err != nil {
 		log.Fatalf("Unable to cache oauth token: %v", err)
 	}
-	defer f.Close()
-	json.NewEncoder(f).Encode(token)
+
+	defer tokenFile.Close()
+
+	json.NewEncoder(tokenFile).Encode(token)
 }
 
-func tempReadSheet() {
-	b, err := ioutil.ReadFile("credentials.json")
-	if err != nil {
-		log.Fatalf("Unable to read client secret file: %v", err)
-	}
+// Retrieves a token from a JSON file.
+func getTokenFromFile() (*oauth2.Token, error) {
 
-	// If modifying these scopes, delete your previously saved token.json.
-	config, err := google.ConfigFromJSON(b, "https://www.googleapis.com/auth/spreadsheets.readonly")
+	tokenFile, err := os.Open(TokenFileName)
 
 	if err != nil {
-		log.Fatalf("Unable to parse client secret file to config: %v", err)
+		return nil, err
 	}
 
-	client := GetOauthClient(config)
+	defer tokenFile.Close()
 
-	srv, err := sheets.New(client)
-	if err != nil {
-		log.Fatalf("Unable to retrieve Sheets client: %v", err)
-	}
+	token := &oauth2.Token{}
+	err = json.NewDecoder(tokenFile).Decode(token)
 
-	// Prints the names and majors of students in a sample spreadsheet:
-	// https://docs.google.com/spreadsheets/d/1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms/edit
-	spreadsheetId := "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-	readRange := "Class Data!A2:E"
-	resp, err := srv.Spreadsheets.Values.Get(spreadsheetId, readRange).Do()
-	if err != nil {
-		log.Fatalf("Unable to retrieve data from sheet: %v", err)
-	}
-
-	if len(resp.Values) == 0 {
-		fmt.Println("No data found.")
-	} else {
-		fmt.Println("Name, Major:")
-		for _, row := range resp.Values {
-			// Print columns A and E, which correspond to indices 0 and 4.
-			fmt.Printf("%s, %s\n", row[0], row[4])
-		}
-	}
+	return token, err
 }

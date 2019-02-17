@@ -3,6 +3,12 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "b1KgRkWqz0RmrEBK6IJ8kOJva6w=",
+			"path": "cloud.google.com/go/compute/metadata",
+			"revision": "35685ad21ad4a9ba8011fa0abed10660d9379f33",
+			"revisionTime": "2019-02-12T22:52:31Z"
+		},
+		{
 			"checksumSHA1": "Pxx+8cipatmpykEo9DpKFqBIOkk=",
 			"path": "github.com/go-chi/chi",
 			"revision": "1a6bb108ccf279c8dac6f9bad857d773b4f9b421",
@@ -25,6 +31,72 @@
 			"path": "github.com/go-chi/render",
 			"revision": "3215478343fbc559bd3fc08f7031bb134d6bdad5",
 			"revisionTime": "2018-05-31T15:06:17Z"
+		},
+		{
+			"checksumSHA1": "GtamqiJoL7PGHsN454AoffBFMa8=",
+			"path": "golang.org/x/net/context",
+			"revision": "3a22650c66bd7f4fb6d1e8072ffd7b75c8a27898",
+			"revisionTime": "2019-02-11T12:35:32Z"
+		},
+		{
+			"checksumSHA1": "aFpql3G+Nw8zkzfqLWQJNZC8pu0=",
+			"path": "golang.org/x/net/context/ctxhttp",
+			"revision": "3a22650c66bd7f4fb6d1e8072ffd7b75c8a27898",
+			"revisionTime": "2019-02-11T12:35:32Z"
+		},
+		{
+			"checksumSHA1": "NYoHtFLAmmPTiicZhL1WbTfhW+4=",
+			"path": "golang.org/x/oauth2",
+			"revision": "3e8b2be1363542a95c52ea0796d4a40dacfb5b95",
+			"revisionTime": "2019-02-12T00:33:33Z"
+		},
+		{
+			"checksumSHA1": "aFOdnzUEyaW4XrHECHr3QW3xun8=",
+			"path": "golang.org/x/oauth2/google",
+			"revision": "3e8b2be1363542a95c52ea0796d4a40dacfb5b95",
+			"revisionTime": "2019-02-12T00:33:33Z"
+		},
+		{
+			"checksumSHA1": "9BtVnyPpVQdhVSW78CNUR+iJmK4=",
+			"path": "golang.org/x/oauth2/internal",
+			"revision": "3e8b2be1363542a95c52ea0796d4a40dacfb5b95",
+			"revisionTime": "2019-02-12T00:33:33Z"
+		},
+		{
+			"checksumSHA1": "huVltYnXdRFDJLgp/ZP9IALzG7g=",
+			"path": "golang.org/x/oauth2/jws",
+			"revision": "3e8b2be1363542a95c52ea0796d4a40dacfb5b95",
+			"revisionTime": "2019-02-12T00:33:33Z"
+		},
+		{
+			"checksumSHA1": "Qyhes/zuLDRC41nI/ko3IyHw8a8=",
+			"path": "golang.org/x/oauth2/jwt",
+			"revision": "3e8b2be1363542a95c52ea0796d4a40dacfb5b95",
+			"revisionTime": "2019-02-12T00:33:33Z"
+		},
+		{
+			"checksumSHA1": "RKvIl9YrICqcUYQFsY5BYBQBH8Y=",
+			"path": "google.golang.org/api/gensupport",
+			"revision": "77d02fa16783d31ba92e59fc0a888a45635f433e",
+			"revisionTime": "2019-01-10T19:49:01Z"
+		},
+		{
+			"checksumSHA1": "YIDE68w/xMptf6Nu9hHiOwXOvho=",
+			"path": "google.golang.org/api/googleapi",
+			"revision": "77d02fa16783d31ba92e59fc0a888a45635f433e",
+			"revisionTime": "2019-01-10T19:49:01Z"
+		},
+		{
+			"checksumSHA1": "1K0JxrUfDqAB3MyRiU1LKjfHyf4=",
+			"path": "google.golang.org/api/googleapi/internal/uritemplates",
+			"revision": "77d02fa16783d31ba92e59fc0a888a45635f433e",
+			"revisionTime": "2019-01-10T19:49:01Z"
+		},
+		{
+			"checksumSHA1": "KDTUE7lhUuyYiL1Bv5x4abeHhVw=",
+			"path": "google.golang.org/api/sheets/v4",
+			"revision": "77d02fa16783d31ba92e59fc0a888a45635f433e",
+			"revisionTime": "2019-01-10T19:49:01Z"
 		}
 	],
 	"rootPath": "github.com/frnkly/hitched"

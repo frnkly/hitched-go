@@ -36,11 +36,17 @@ const CeremonyInvitationColIndex int = 2
 // CeremonyConfirmationColIndex - Index of "ceremony confirmation" column in Google sheet.
 const CeremonyConfirmationColIndex int = 3
 
+// CeremonyConfirmationColLetter ...
+const CeremonyConfirmationColLetter string = "D"
+
 // ReceptionInvitationColIndex - Index of "reception invitation" column in Google sheet.
 const ReceptionInvitationColIndex int = 4
 
 // ReceptionConfirmationColIndex - Index of "reception confirmation" column in Google sheet.
 const ReceptionConfirmationColIndex int = 5
+
+// ReceptionConfirmationColLetter ...
+const ReceptionConfirmationColLetter string = "F"
 
 // CodeColIndex - Index of "code" column in Google sheet.
 const CodeColIndex int = 6
@@ -53,6 +59,15 @@ const LanguageColIndex int = 8
 
 // CheckMark is the checkmark charater used in the Google sheet.
 const CheckMark string = "✓"
+
+// CrossMark is the cross mark used in the Google sheet.
+const CrossMark string = "✗"
+
+// IsAttendingEvent ...
+const IsAttendingEvent int8 = 1
+
+// IsNotAttendingEvent ...
+const IsNotAttendingEvent int8 = 2
 
 // ---
 // Utility functions

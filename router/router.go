@@ -49,7 +49,7 @@ func Create() *chi.Mux {
 
 	// RSVP
 	router.Get("/rsvp/{code}", handlers.GetRsvp)
-	router.Post("/rsvp/{code}", handlers.UpdateRsvp)
+	router.Post("/rsvp/{action}/{event}/{code}", handlers.UpdateRsvp)
 
 	return router
 }

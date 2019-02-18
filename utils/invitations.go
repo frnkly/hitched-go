@@ -1,5 +1,12 @@
 package utils
 
+import (
+	"errors"
+	"log"
+	"os"
+	"strconv"
+)
+
 // ---
 // Data structures
 // ---
@@ -9,8 +16,9 @@ type Guest struct {
 	FirstName            string `json:"firstName"`
 	LastName             string `json:"lastName"`
 	Contact              string `json:"contact"`
-	IsAttendingCeremony  bool   `json:"isAttendingCeremony"`
-	IsAttendingReception bool   `json:"isAttendingReception"`
+	IsAttendingCeremony  int8   `json:"isAttendingCeremony"`
+	IsAttendingReception int8   `json:"isAttendingReception"`
+	RowIndex             int    `json:"rowIdx"`
 }
 
 // Invitation represents a guest's invitation(s), along with their RSVP.
@@ -27,7 +35,7 @@ type InvitationList struct {
 }
 
 // ---
-// Helper functions
+// Utility functions
 // ---
 
 // GetInvitationList returns all invitations, organized by code.
@@ -42,9 +50,11 @@ func GetInvitationList() (*InvitationList, error) {
 	}
 
 	// Populate sheet struct.
-	for _, data := range sheetData {
+	for rowIdx, data := range sheetData {
 		// Skip empty rows and guests who don't have a ceremony invite.
-		if data[FirstNameColIndex] == "" || data[CeremonyInvitationColIndex] == "" {
+		if data[FirstNameColIndex] == "" ||
+			len(data) < CeremonyInvitationColIndex ||
+			data[CeremonyInvitationColIndex] == "" {
 			continue
 		}
 
@@ -95,12 +105,79 @@ func GetInvitationList() (*InvitationList, error) {
 			FirstName:            firstNameColData,
 			LastName:             lastNameColData,
 			Contact:              contactColData,
-			IsAttendingCeremony:  data[CeremonyConfirmationColIndex] == CheckMark,
-			IsAttendingReception: data[ReceptionConfirmationColIndex] == CheckMark,
+			IsAttendingCeremony:  isAttending(data[CeremonyConfirmationColIndex]),
+			IsAttendingReception: isAttending(data[ReceptionConfirmationColIndex]),
+			RowIndex:             rowIdx + 3,
 		}
 
 		guestList.Invitations[code].Guests = append(guestList.Invitations[code].Guests, &guest)
 	}
 
 	return &guestList, nil
+}
+
+// SetAttendence ...
+func (g *Guest) SetAttendence(column int, isAttending bool) error {
+	// Create sheet range.
+	rangeValue := strconv.Itoa(g.RowIndex)
+
+	if column == CeremonyConfirmationColIndex {
+		rangeValue = CeremonyConfirmationColLetter + rangeValue
+	} else if column == ReceptionConfirmationColIndex {
+		rangeValue = ReceptionConfirmationColLetter + rangeValue
+	} else {
+		return errors.New("invalid attendance column")
+	}
+
+	// Google Sheet service.
+	service, err := GetSheetService()
+
+	if err != nil {
+		return err
+	}
+
+	// Attendance value
+	attendance := ValueToSheet(CheckMark)
+
+	if isAttending == false {
+		attendance = ValueToSheet(CrossMark)
+	}
+
+	// Update invitation in sheet.
+	response, err := service.Spreadsheets.Values.Update(
+		os.Getenv("GOOGLE_SPREADSHEET_ID"),
+		rangeValue,
+		attendance,
+	).ValueInputOption("RAW").Do()
+
+	if err != nil {
+		return err
+	}
+
+	// log.Println("invitation", invite)
+	log.Println("update response", response)
+
+	return nil
+}
+
+// --
+// Helper functions
+// --
+
+func isAttending(data interface{}) int8 {
+	attendingData, attendingTest := data.(string)
+
+	if attendingTest == false {
+		return 0
+	}
+
+	if attendingData == CheckMark {
+		return 1
+	}
+
+	if attendingData == CrossMark {
+		return 2
+	}
+
+	return 0
 }

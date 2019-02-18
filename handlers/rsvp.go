@@ -147,8 +147,8 @@ func getInvitationByCode(code string) (*utils.Invitation, error) {
 		}
 
 		frank := utils.Guest{
-			FirstName: "Frank",
-			LastName:  "Amankrah",
+			FirstName: "Francis",
+			LastName:  "Long Name Amankrah",
 			Contact:   "frank@frnk.ca",
 		}
 
@@ -173,8 +173,8 @@ func getInvitationByCode(code string) (*utils.Invitation, error) {
 		}
 
 		frank := utils.Guest{
-			FirstName: "Frank",
-			LastName:  "Amankrah",
+			FirstName: "Francis",
+			LastName:  "Long Name Amankrah",
 			Contact:   "frank@frnk.ca",
 		}
 
@@ -210,8 +210,8 @@ func getInvitationByCode(code string) (*utils.Invitation, error) {
 		}
 
 		frank := utils.Guest{
-			FirstName: "Frank",
-			LastName:  "Amankrah",
+			FirstName: "Francis",
+			LastName:  "Long Name Amankrah",
 			Contact:   "frank@frnk.ca",
 		}
 

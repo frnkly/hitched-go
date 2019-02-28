@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/frnkly/hitched/handlers"
+	"github.com/kwcay/hitched-api/handlers"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
 	"github.com/go-chi/cors"

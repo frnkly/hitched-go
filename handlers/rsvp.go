@@ -9,7 +9,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/frnkly/hitched/utils"
+	"github.com/kwcay/hitched-api/utils"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/render"
 )

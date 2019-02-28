@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/frnkly/hitched/router"
+	"github.com/kwcay/hitched-api/router"
 	"github.com/go-chi/chi"
 )
 

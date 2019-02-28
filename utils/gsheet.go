@@ -84,7 +84,7 @@ func GetSheetService() (*sheets.Service, error) {
 	return service, nil
 }
 
-// GetSheet retrieves the contents of the Google sheet.
+// GetSheetData retrieves the contents of the Google sheet.
 func GetSheetData() ([][]interface{}, error) {
 	// The sheet service allows us to make requests on a given sheet.
 	service, err := GetSheetService()
